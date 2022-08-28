@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -79,7 +80,6 @@ func enregistreListeDoublePrime(chemin string, cheminDest string) {
 	}
 
 	w := bufio.NewWriter(f2)
-	//var i int64
 	for _, v := range buf {
 		for _, v2 := range buf {
 			n := v * v2
@@ -88,15 +88,54 @@ func enregistreListeDoublePrime(chemin string, cheminDest string) {
 			check(err)
 		}
 	}
-	//for i = 2; i <= n; i++ {
-	//	if isPrime(i) {
-	//
-	//		s := strconv.FormatInt(i, 10)
-	//		//println(s)
-	//		_, err := w.WriteString(s + "\n")
-	//		check(err)
-	//	}
-	//}
+	err = w.Flush()
+	check(err)
+
+}
+
+// IntPow calculates n to the mth power. Since the result is an int, it is assumed that m is a positive power
+func IntPow(n int64, m int) int64 {
+	if m == 0 {
+		return 1
+	}
+	result := n
+	for i := 2; i <= m; i++ {
+		result *= n
+	}
+	return result
+}
+
+func filtreListeDoublePrime(n int, chemin string, cheminDest string) {
+
+	f, err := os.Open(chemin)
+	check(err)
+	defer f.Close()
+
+	f2, err2 := os.Create(cheminDest)
+	check(err2)
+	defer f2.Close()
+
+	//var buf []int64
+
+	scanner := bufio.NewScanner(f)
+	w := bufio.NewWriter(f2)
+	for scanner.Scan() {
+		check(scanner.Err())
+		s := scanner.Text()
+		pos := strings.LastIndex(s, "=")
+		if pos >= 0 {
+			i, err := strconv.ParseInt(s[pos+1:], 10, 64)
+			if err != nil {
+				check(err)
+			}
+			if i >= IntPow(10, n-1) && i < IntPow(10, n) {
+				_, err := w.WriteString(s + "\n")
+				check(err)
+			}
+		}
+
+	}
+
 	err = w.Flush()
 	check(err)
 
@@ -120,7 +159,7 @@ func main() {
 
 	//affiche = false
 	//affiche = true
-	methode := 3
+	methode := 4
 
 	if methode == 1 {
 		debut := time.Now().UnixNano() / 1000_000
@@ -140,6 +179,14 @@ func main() {
 		fmt.Printf("Enregistrement du fichier %s\n", filename)
 		debut := time.Now().UnixNano() / 1000_000
 		enregistreListeDoublePrime(filename, filename2)
+		fin := time.Now().UnixNano() / 1000_000
+		fmt.Printf("%d msec\n", fin-debut)
+	} else if methode == 4 {
+		filename := "d:\\temp\\double_primes_1_000_000.txt"
+		filename2 := "d:\\temp\\double_primes_100_000_bis.txt"
+		fmt.Printf("Enregistrement du fichier %s\n", filename2)
+		debut := time.Now().UnixNano() / 1000_000
+		filtreListeDoublePrime(5, filename, filename2)
 		fin := time.Now().UnixNano() / 1000_000
 		fmt.Printf("%d msec\n", fin-debut)
 	}
