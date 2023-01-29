@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
@@ -153,6 +154,67 @@ func check(e error) {
 	}
 }
 
+func racineCarre(n *big.Int) *big.Int {
+	var racineCarre, tmp *big.Int
+	racineCarre = big.NewInt(0)
+	tmp = big.NewInt(0)
+	racineCarre.Sqrt(n)
+	tmp.Mul(racineCarre, racineCarre)
+	if tmp.Cmp(n) == 0 {
+		return racineCarre
+	} else {
+		return big.NewInt(0)
+	}
+}
+
+func factorisationFermat(n *big.Int) {
+
+	var a0, b0 *big.Int
+	trouve := false
+	zero := big.NewInt(0)
+	un := big.NewInt(1)
+	deux := big.NewInt(2)
+	n2 := n
+	var max *big.Int = big.NewInt(0)
+	max.Add(n2, un)
+	tmp := big.NewInt(0)
+	var tmp2 *big.Int = big.NewInt(0)
+	for i := big.NewInt(0); i.Cmp(max) <= 0; {
+
+		a := i
+		tmp.Exp(a, deux, nil)
+		tmp2.Sub(tmp, n)
+
+		if tmp2.Cmp(zero) < 0 {
+			// tmp2 <0 => on passe au suivant
+		} else if tmp2.Cmp(zero) == 0 {
+			a0 = a
+			b0 = a
+			trouve = true
+			break
+		} else {
+			tmp3 := racineCarre(tmp2)
+			if tmp3.Cmp(zero) != 0 {
+				a1 := a
+				b1 := tmp3
+				a0 = big.NewInt(0)
+				b0 = big.NewInt(0)
+				a0.Add(a1, b1)
+				b0.Sub(a1, b1)
+				trouve = true
+				break
+			}
+		}
+
+		i = i.Add(i, un)
+	}
+	if trouve {
+		fmt.Printf("trouve %s : %s * %s\n", n, a0, b0)
+	} else {
+		fmt.Printf("pas trouve (%s)\n", n)
+	}
+}
+
 func main() {
 	var n int64
 	//var affiche bool
@@ -166,7 +228,8 @@ func main() {
 
 	//affiche = false
 	//affiche = true
-	methode := 5
+	//methode := 5
+	methode := 6
 
 	if methode == 1 {
 		debut := time.Now().UnixNano() / 1000_000
@@ -201,6 +264,28 @@ func main() {
 		fmt.Printf("Enregistrement du fichier %s\n", filename)
 		debut := time.Now().UnixNano() / 1000_000
 		enregistreListePrime(n, filename)
+		fin := time.Now().UnixNano() / 1000_000
+		fmt.Printf("%d msec\n", fin-debut)
+	} else if methode == 6 {
+		//filename := "d:\\temp\\primes2.txt"
+		//fmt.Printf("Enregistrement du fichier %s\n", filename)
+
+		var s string
+		//s = "15"  // 3*5
+		//s = "115" // 5*23
+		//s = "9409" // 97*97
+		//s = "28741"                // 41*701
+		//s = "99400891"             // 9967*9973
+		//s = "2479541989"           //49789*49801 <1s
+		s = "99998800003591" // <1s
+		//s = "26382685634187504697" // 4248200851*6210319747 > plusieurs minutes
+
+		x, res2 := new(big.Int).SetString(s, 10)
+		if !res2 {
+			println("Erreur")
+		}
+		debut := time.Now().UnixNano() / 1000_000
+		factorisationFermat(x)
 		fin := time.Now().UnixNano() / 1000_000
 		fmt.Printf("%d msec\n", fin-debut)
 	}
