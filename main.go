@@ -42,6 +42,7 @@ func enregistreListePrime(n int64, chemin string) {
 	defer f.Close()
 	w := bufio.NewWriter(f)
 	var i int64
+	var j int64 = 0
 	for i = 2; i <= n; i++ {
 		if isPrime(i) {
 
@@ -49,6 +50,11 @@ func enregistreListePrime(n int64, chemin string) {
 			//println(s)
 			_, err := w.WriteString(s + "\n")
 			check(err)
+			j++
+			if j%10 == 0 {
+				err = w.Flush()
+				check(err)
+			}
 		}
 	}
 	err = w.Flush()
@@ -155,11 +161,12 @@ func main() {
 	n = 50000
 	n = 100000
 	n = 1_000_000
+	n = 10_000_000
 	//n = 1_000_000_000
 
 	//affiche = false
 	//affiche = true
-	methode := 4
+	methode := 5
 
 	if methode == 1 {
 		debut := time.Now().UnixNano() / 1000_000
@@ -187,6 +194,13 @@ func main() {
 		fmt.Printf("Enregistrement du fichier %s\n", filename2)
 		debut := time.Now().UnixNano() / 1000_000
 		filtreListeDoublePrime(5, filename, filename2)
+		fin := time.Now().UnixNano() / 1000_000
+		fmt.Printf("%d msec\n", fin-debut)
+	} else if methode == 5 {
+		filename := "d:\\temp\\primes2.txt"
+		fmt.Printf("Enregistrement du fichier %s\n", filename)
+		debut := time.Now().UnixNano() / 1000_000
+		enregistreListePrime(n, filename)
 		fin := time.Now().UnixNano() / 1000_000
 		fmt.Printf("%d msec\n", fin-debut)
 	}
